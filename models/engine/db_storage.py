@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+"""This module defines a class to manage database storage for hbnb clone"""
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 from models.city import City
@@ -62,3 +63,7 @@ class DBStorage():
             bind=self.__engine, expire_on_commit=False)
         Session = scoped_session(session_creation)
         self.__session = Session()
+
+    def close(self):
+        """method private close current session attribute (self.__session)"""
+        self.__session.remove()
