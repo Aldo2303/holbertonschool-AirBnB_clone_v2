@@ -73,7 +73,7 @@ class HBNBCommand(cmd.Cmd):
                 pline = pline[2].strip()  # pline is now str
                 if pline:
                     # check for *args or **kwargs
-                    if pline[0] == '{' and pline[-1] == '}' \
+                    if pline[0] == '{' and pline[-1] == '}'\
                             and type(eval(pline)) is dict:
                         _args = pline
                     else:
@@ -113,41 +113,42 @@ class HBNBCommand(cmd.Cmd):
         """ Overrides the emptyline method of CMD """
         pass
 
-# update do create, allow more parameters, str, float and int
     def do_create(self, args):
         """ Create an object of any class"""
         if not args:
             print("** class name missing **")
             return
-
-        argum = args.split()
-        if argum[0] not in HBNBCommand.classes:
+        elif args.split()[0] not in HBNBCommand.classes:
             print("** class doesn't exist **")
             return
 
-        new_instance = HBNBCommand.classes[argum[0]]()
-        for parameters in argum[1:]:
-            key = parameters.split("=")[0]
-            value = parameters.split("=")[1]
+        def isFloat(num):
+            try:
+                float(num)
+                return True
+            except Exception:
+                return False
 
-            if hasattr(new_instance, key) is True:
-                if "\"" in value:
-                    value = value.strip("\"")
-                    value = str(value)
+        arg = args.split()
+        obj = HBNBCommand.classes[arg[0]]()
 
-                    if "_" in value:
-                        value = value.replace("_", " ")
-                else:
-                    if "." in value:
-                        value = float(value)
-                    else:
-                        value = int(value)
-                setattr(new_instance, key, value)
+        for i in range(1, len(arg)):
+            params = arg[i].split("=")
+            if "id" in params[0]:
+                params[1] = params[1].replace('_', ' ')
+                params[1] = params[1].strip('\"')
+            elif params[1].isdigit() and "." not in params[1]:
+                params[1] = int(params[1])
+            elif isFloat(params[1]):
+                params[1] = float(params[1])
             else:
-                pass
-        new_instance.save()
+                params[1] = params[1].replace('_', ' ')
+                params[1] = params[1].strip('\"')
+            setattr(obj, params[0], params[1])
+
+        obj.save()
+        print(obj.id)
         storage.save()
-        print(new_instance.id)
 
     def help_create(self):
         """ Help information for the create method """
@@ -229,11 +230,12 @@ class HBNBCommand(cmd.Cmd):
             if args not in HBNBCommand.classes:
                 print("** class doesn't exist **")
                 return
-            for k, v in storage.all().items():
-                if k.split('.')[0] == args:
-                    print_list.append(str(v))
+            to_print = storage.all(HBNBCommand.classes[args])
+            for k, v in to_print.items():
+                print_list.append(str(v))
         else:
-            for k, v in storage.all().items():
+            to_print = storage.all()
+            for k, v in to_print.items():
                 print_list.append(str(v))
 
         print(print_list)
@@ -246,7 +248,7 @@ class HBNBCommand(cmd.Cmd):
     def do_count(self, args):
         """Count current number of class instances"""
         count = 0
-        for k, v in storage.all().items():
+        for k, v in storage._FileStorage__objects.items():
             if args == k.split('.')[0]:
                 count += 1
         print(count)

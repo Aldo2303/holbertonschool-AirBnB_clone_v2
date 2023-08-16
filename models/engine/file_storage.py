@@ -8,18 +8,27 @@ class FileStorage:
     __file_path = 'file.json'
     __objects = {}
 
-    """update all method"""
     def all(self, cls=None):
         """Returns a dictionary of models currently in storage"""
-        if cls is None:
-            return FileStorage.__objects
+        if cls:
+            new_dict = {}
+            for k, v in FileStorage.__objects.items():
+                if k.split('.')[0] == cls.__name__:
+                    new_dict[k] = v
+            return new_dict
         else:
-            return {key: value for key, value in FileStorage.__objects.items()
-                    if isinstance(value, cls)}
+            return FileStorage.__objects
 
     def new(self, obj):
         """Adds new object to storage dictionary"""
         self.all().update({obj.to_dict()['__class__'] + '.' + obj.id: obj})
+
+    def delete(self, obj=None):
+        """Deletes an object from the dictionary"""
+        if obj:
+            key = obj.__class__.__name__ + "." + obj.id
+            del FileStorage.__objects[key]
+            self.save()
 
     def save(self):
         """Saves storage dictionary to file"""
@@ -52,14 +61,4 @@ class FileStorage:
                 for key, val in temp.items():
                     self.all()[key] = classes[val['__class__']](**val)
         except FileNotFoundError:
-            pass
-
-    def delete(self, obj=None):
-        """new method to delet if object is on __object"""
-        if obj is not None:
-            key = obj.__class__.__name__ + "." + obj.id
-            if key in self.all():
-                del (self.all()[key])
-                self.save()
-        else:
             pass
