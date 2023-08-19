@@ -13,7 +13,7 @@ app = Flask(__name__)
 
 
 @app.teardown_appcontext
-def teardown_storage():
+def teardown_storage(exception):
     """Call in this method storage.close()"""
     storage.close()
 
@@ -22,7 +22,7 @@ def teardown_storage():
 def states_list():
     """ Displays a specific message when route is '/states_list' """
     return render_template('7-states_list.html',
-                           states=storage.all('State').values())
+                           states=storage.all("State").values())
 
 
 if __name__ == '__main__':
